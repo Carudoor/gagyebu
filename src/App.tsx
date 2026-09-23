@@ -1,44 +1,40 @@
-import { Suspense, lazy, useEffect } from 'react'
-import { HashRouter, Route, Routes } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { CSpinner, useColorModes } from '@coreui/react'
+import { Suspense, lazy } from 'react'
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import BottomNav from './components/BottomNav'
 import './scss/style.scss'
-import type { RootState } from './store'
 
-const DefaultLayout = lazy(() => import('./layout/DefaultLayout'))
+const Home = lazy(() => import('./views/home/Home'))
+const Records = lazy(() => import('./views/records/Records'))
+const Settings = lazy(() => import('./views/settings/Settings'))
 
 const App = () => {
-  const { isColorModeSet, setColorMode } = useColorModes('가계부-theme')
-  const storedTheme = useSelector((state: RootState) => state.theme)
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.href.split('?')[1])
-    const theme = urlParams.get('theme')?.match(/^[A-Za-z0-9\s]+/)?.[0]
-    if (theme) {
-      setColorMode(theme)
-    }
-
-    if (isColorModeSet()) {
-      return
-    }
-
-    setColorMode(storedTheme)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   return (
     <HashRouter>
-      <Suspense
-        fallback={
-          <div className="pt-3 text-center">
-            <CSpinner color="primary" variant="grow" />
-          </div>
-        }
+      <div
+        className="tw:min-h-dvh tw:flex tw:flex-col"
+        style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}
       >
-        <Routes>
-          <Route path="*" element={<DefaultLayout />} />
-        </Routes>
-      </Suspense>
+        <main
+          className="tw:flex-1 tw:overflow-y-auto"
+          style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}
+        >
+          <Suspense
+            fallback={
+              <div className="tw:p-6 tw:text-center tw:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                불러오는 중...
+              </div>
+            }
+          >
+            <Routes>
+              <Route path="/home" element={<Home />} />
+              <Route path="/records" element={<Records />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<Navigate to="/home" replace />} />
+            </Routes>
+          </Suspense>
+        </main>
+        <BottomNav />
+      </div>
     </HashRouter>
   )
 }

@@ -9,23 +9,65 @@
 - 그래프
 - 정기 구독 관리
 
-## 디자인
-2026-09-22 확정 — [CoreUI Free React Admin Template](https://21st.dev/@coreui/templates/coreui-free-react-admin-template)
-(GitHub: coreui/coreui-free-react-admin-template)을 기반으로 진행.
+## 디자인 히스토리
+1. **2026-09-22**: [CoreUI Free React Admin Template](https://21st.dev/@coreui/templates/coreui-free-react-admin-template)
+   기반 데스크톱 관리자 스타일(사이드바 네비)로 시작. CoreUI가 React 19 +
+   **Bootstrap 5** 기반이라 원래 스택 선택 이유(Tailwind로 21st.dev 컴포넌트
+   그대로 붙이기)와 충돌해서, Tailwind는 `preflight` 빼고 `tw:` 접두사로
+   Bootstrap과 공존시킴 (`src/index.css`).
+2. **2026-09-23**: 사용자가 실제로는 아이폰 전용 개인 앱으로 쓸 거라 완전히
+   다른 디자인 가이드(토스/애플 스타일 모바일 UI, Indigo 팔레트, 하단 탭바,
+   Tailwind 커스텀 컴포넌트)를 주면서 전면 리디자인 요청 — 아래 "모바일 UI
+   리디자인" 참고. 사이드바/헤더/브레드크럼 전부 삭제하고 하단 탭바 3개
+   (홈/기록/설정)로 재구성함.
 
-CoreUI는 React 19 + **Bootstrap 5** 기반이라 원래 스택 선택 이유(Tailwind로
-21st.dev 컴포넌트 그대로 붙이기)와 충돌함 — 사용자 확인 후 Bootstrap 계열인
-`@coreui/*` 패키지를 추가로 설치하고 템플릿의 레이아웃/컴포넌트를 그대로
-가져다 쓰는 쪽으로 결정함. Tailwind는 유지하되:
-- `src/index.css`에서 `preflight`(기본 리셋)는 빼고 `theme`/`utilities`만 로드
-  (CoreUI/Bootstrap 리셋과 충돌 방지)
-- Tailwind 유틸리티 클래스는 `tw:` 접두사를 붙여서 사용 (예: `tw:flex`) — Bootstrap
-  유틸리티 클래스명(`mt-4`, `d-flex` 등)과 충돌 방지
+## 모바일 UI 리디자인 (2026-09-23)
+**아직 절반만 끝남 — 홈 화면은 새 디자인으로 완전히 새로 만들었고, 기록/설정
+화면은 임시로 기존 CoreUI 화면을 얇은 세그먼트 탭 안에 그대로 넣어둔 상태.**
 
-레이아웃 뼈대(`src/layout/DefaultLayout.tsx`, `src/components/App*.tsx`,
-`src/_nav.tsx`, `src/routes.tsx`, `src/store.ts`)와 5개 메뉴
-(대시보드/거래 내역/카테고리별 통계/그래프/정기 구독 관리) 전부 실 데이터로
-동작함 (2026-09-23 기준).
+- **디자인 토큰**: `src/index.css`에 라이트/다크 색상을 CSS 변수로 정의
+  (primary `#6366F1`(다크 `#818CF8`), bg `#F9FAFB`/`#111827`,
+  surface `#FFFFFF`/`#1F2937`, text `#111827`/`#F3F4F6` 등 — 사용자가 준
+  가이드 값 그대로). 카드 radius 16px(`rounded-2xl`), 버튼 12px(`rounded-xl`),
+  섀도 `0_4px_6px_-1px_rgba(0,0,0,0.05)` 도 가이드값 그대로 적용.
+- **테마 시스템 교체**: CoreUI의 `useColorModes`(AppHeader 드롭다운) 대신
+  직접 만든 `src/theme.ts`(`applyTheme`/`getStoredThemeMode`/`initTheme`)로
+  변경. 라이트/다크 전환 시 **이 앱 자체의 `data-theme` 속성**과 **CoreUI가
+  보는 `data-coreui-theme` 속성을 동시에 설정**해서, 새로 만든 화면(홈)과
+  아직 CoreUI로 남아있는 화면(기록/설정 안쪽)의 색이 항상 같이 바뀌게 함.
+  localStorage 키는 기존과 동일한 `가계부-theme` 재사용.
+- **네비게이션**: 사이드바 → 하단 탭바(`src/components/BottomNav.tsx`,
+  홈/기록/설정 3개, `env(safe-area-inset-bottom)` 처리). 라우트도
+  `/dashboard,/transactions,/statistics,/charts,/subscriptions,/backup`
+  6개에서 `/home,/records,/settings` 3개로 줄임 — `src/routes.tsx`,
+  `src/_nav.tsx`는 삭제함(더 이상 브레드크럼/사이드바가 없어서 라우트 이름
+  레지스트리가 필요 없어짐).
+- **삭제한 것**: `src/layout/DefaultLayout.tsx`, `src/components/AppSidebar*.tsx`,
+  `AppHeader.tsx`, `AppFooter.tsx`, `AppBreadcrumb.tsx`, `AppContent.tsx`,
+  `header/AppHeaderDropdown.tsx`, `src/_nav.tsx`, `src/store.ts`(redux),
+  `src/routes.tsx`, `src/views/dashboard/Dashboard.tsx`. `react-redux`/`redux`
+  npm 패키지도 제거함(사이드바 UI 상태 관리 외엔 쓰던 곳이 없었음).
+- **홈 화면**(`src/views/home/Home.tsx`, 완전히 새 디자인): 그라데이션
+  히어로 카드(이번 달 잔액 + 지출/수입 진행률 바) + 최근 거래 카드 + 정기
+  구독 요약 카드. 전부 CoreUI 없이 순수 Tailwind(`tw:` 접두사) + 위 CSS
+  변수로만 스타일링함.
+- **기록 화면**(`src/views/records/Records.tsx`): 상단에 새 스타일 세그먼트
+  탭(거래/통계/그래프)을 두고, 그 아래 내용은 **기존 `Transactions.tsx`/
+  `Statistics.tsx`/`Charts.tsx`를 그대로(수정 없이) 렌더링** — 아직 CoreUI
+  Bootstrap 스타일 그대로라 새 디자인과 안 어울림(특히 좁은 화면에서 표가
+  가로 스크롤되는 부분). 다음에 카드 리스트 형태로 다시 만들 예정.
+- **설정 화면**(`src/views/settings/Settings.tsx`): 상단에 테마 선택
+  (라이트/다크/자동, 새 디자인) + 세그먼트 탭(정기 구독/백업), 아래는 기존
+  `Subscriptions.tsx`/`Backup.tsx` 그대로 렌더링. 마찬가지로 다음에 새
+  디자인으로 다시 만들 예정.
+- 390×844(아이폰 기준) 헤드리스 브라우저로 홈/기록/설정 라이트·다크 모드
+  전부 스크린샷 확인함. 기록 화면의 표는 가로 스크롤이 실제로 되는 것도
+  확인함(처음엔 깨진 것처럼 보였는데 스크롤 위치 문제였음).
+- **다음에 할 것**: 기록/설정 화면 내부(거래 입력 폼, 목록, 구독 목록,
+  백업 UI)를 전부 새 디자인 언어(카드 리스트, 바텀 시트 입력 폼 등)로
+  다시 만들기. 그 다음엔 CoreUI(`@coreui/react`, `@coreui/coreui` scss,
+  Tailwind `tw:` 접두사 hack)를 완전히 뗄 수 있음 — 지금은 기록/설정이
+  아직 그걸 쓰고 있어서 못 뗌.
 
 ## 데이터 저장 방식 (2026-09-23 최종 — 엑셀 우선 → 앱 우선 → 엑셀 완전 제거)
 처음엔 "엑셀 파일이 유일한 진실, 앱은 최신화 버튼으로 통째로 교체"하는
@@ -157,7 +199,6 @@ CoreUI는 React 19 + **Bootstrap 5** 기반이라 원래 스택 선택 이유(Ta
     같은 백업으로 병합(중복 안 생기는 것 확인) → 같은 백업으로 완전 교체
     (원래 백업 상태로 정확히 되돌아가는 것 확인) → 잘못된 형식 파일 넣었을 때
     에러 메시지 뜨는 것까지 확인함.
-- 아직 **불러오기(복원) 기능은 없음** — 다음 순서로 예정.
 
 **`<channel source="plugin:discord:discord" ...>` 태그로 메시지가 오면
 반드시 Discord `reply` 도구로 답한다 — 절대 터미널 트랜스크립트에만

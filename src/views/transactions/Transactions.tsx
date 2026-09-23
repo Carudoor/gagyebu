@@ -123,7 +123,7 @@ const Transactions = () => {
           {transactions.length === 0 ? (
             <p className="text-body-secondary mb-0">아직 등록된 거래가 없습니다.</p>
           ) : (
-            <CTable hover responsive>
+            <CTable hover responsive className="text-nowrap">
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell>날짜</CTableHeaderCell>
