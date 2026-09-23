@@ -51,6 +51,21 @@ export function deleteTransaction(id: string) {
   save()
 }
 
+// 백업 복원용. 반환값: 새로 추가된 건수 (이미 있는 id는 건너뜀).
+export function mergeTransactions(incoming: Transaction[]): number {
+  const existingIds = new Set(transactions.map((t) => t.id))
+  const additions = incoming.filter((t) => !existingIds.has(t.id))
+  transactions = sortByDateDesc([...transactions, ...additions])
+  save()
+  return additions.length
+}
+
+// 백업 복원용 — 현재 데이터를 통째로 교체함(되돌릴 수 없음).
+export function replaceAllTransactions(newOnes: Transaction[]) {
+  transactions = sortByDateDesc(newOnes)
+  save()
+}
+
 export function useTransactions() {
   return useSyncExternalStore(subscribe, getTransactions)
 }

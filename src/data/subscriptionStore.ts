@@ -45,6 +45,21 @@ export function deleteSubscription(id: string) {
   save()
 }
 
+// 백업 복원용. 반환값: 새로 추가된 건수 (이미 있는 id는 건너뜀).
+export function mergeSubscriptions(incoming: Subscription[]): number {
+  const existingIds = new Set(subscriptions.map((s) => s.id))
+  const additions = incoming.filter((s) => !existingIds.has(s.id))
+  subscriptions = [...subscriptions, ...additions]
+  save()
+  return additions.length
+}
+
+// 백업 복원용 — 현재 데이터를 통째로 교체함(되돌릴 수 없음).
+export function replaceAllSubscriptions(newOnes: Subscription[]) {
+  subscriptions = newOnes
+  save()
+}
+
 export function useSubscriptions() {
   return useSyncExternalStore(subscribe, getSubscriptions)
 }
