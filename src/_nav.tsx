@@ -1,6 +1,13 @@
 import type { ReactElement } from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilCalendar, cilChart, cilChartPie, cilSpeedometer, cilWallet } from '@coreui/icons'
+import {
+  cilCalendar,
+  cilChart,
+  cilChartPie,
+  cilCloudDownload,
+  cilSpeedometer,
+  cilWallet,
+} from '@coreui/icons'
 
 export type NavEntry =
   | { type: 'title'; name: string }
@@ -37,6 +44,12 @@ const _nav: NavEntry[] = [
     name: '정기 구독 관리',
     to: '/subscriptions',
     icon: <CIcon icon={cilCalendar} customClassName="nav-icon" />,
+  },
+  {
+    type: 'link',
+    name: '백업',
+    to: '/backup',
+    icon: <CIcon icon={cilCloudDownload} customClassName="nav-icon" />,
   },
 ]
 

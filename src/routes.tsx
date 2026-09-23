@@ -5,6 +5,7 @@ const Transactions = lazy(() => import('./views/transactions/Transactions'))
 const Statistics = lazy(() => import('./views/statistics/Statistics'))
 const Charts = lazy(() => import('./views/charts/Charts'))
 const Subscriptions = lazy(() => import('./views/subscriptions/Subscriptions'))
+const Backup = lazy(() => import('./views/backup/Backup'))
 
 export interface AppRoute {
   path: string
@@ -18,6 +19,7 @@ const routes: AppRoute[] = [
   { path: '/statistics', name: '카테고리별 통계', element: Statistics },
   { path: '/charts', name: '그래프', element: Charts },
   { path: '/subscriptions', name: '정기 구독 관리', element: Subscriptions },
+  { path: '/backup', name: '백업', element: Backup },
 ]
 
 export default routes
