@@ -62,6 +62,16 @@ CoreUI는 React 19 + **Bootstrap 5** 기반이라 원래 스택 선택 이유(Ta
   아이폰에서 실제로 열려면(설치/업데이트 시점에만) 이 앱이 어딘가에
   호스팅되어 있어야 함 — 아래 "Git / GitHub / 배포" 참고, GitHub Pages로
   해결함.
+- **버그 수정**: `apple-mobile-web-app-status-bar-style`을 `black-translucent`로
+  했더니 아이폰 홈 화면 추가(독립 실행) 모드에서 상단 상태바(시계/배터리)가
+  앱 콘텐츠 위에 그대로 겹쳐서 헤더가 안 보이고 스크롤로도 안 드러나는 문제
+  발생 (사용자가 실제 아이폰 스크린샷으로 확인해줌). `black-translucent`는
+  상태바 아래까지 웹뷰가 그려지는 모드라 `env(safe-area-inset-top)` 패딩을
+  직접 넣어줘야 하는데 안 넣어서 생긴 문제 — 대신 `default`로 바꿔서 iOS가
+  상태바 영역을 자동으로 비워주게 함(더 간단하고 확실한 해결). 이 메타
+  태그는 사파리/iOS 독립 실행 모드에서만 의미가 있어서 헤드리스
+  Chrome으로는 재현도 검증도 불가능함 — **사용자가 아이폰에서 직접 재확인
+  필요**.
 
 ## Git / GitHub / 배포 (2026-09-23)
 - 로컬 저장소 초기화 완료, GitHub에도 연결함: https://github.com/Carudoor/gagyebu
