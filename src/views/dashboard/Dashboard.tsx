@@ -28,23 +28,25 @@ const Dashboard = () => {
 
   return (
     <>
-      {lastSyncedAt === null ? (
+      {transactions.length === 0 ? (
         <CCard className="mb-4">
           <CCardHeader>대시보드</CCardHeader>
           <CCardBody className="text-center py-5">
-            <p className="text-body-secondary mb-3">아직 거래 내역을 최신화하지 않았습니다.</p>
+            <p className="text-body-secondary mb-3">아직 등록된 거래가 없습니다.</p>
             <CButton color="primary" as={Link} to="/transactions">
-              거래 내역 페이지로 이동
+              거래 내역 추가하러 가기
             </CButton>
           </CCardBody>
         </CCard>
       ) : (
         <>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <span className="text-body-secondary small">
-              마지막 최신화: {new Date(lastSyncedAt).toLocaleString('ko-KR')}
-            </span>
-          </div>
+          {lastSyncedAt && (
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <span className="text-body-secondary small">
+                마지막으로 엑셀에서 가져온 시각: {new Date(lastSyncedAt).toLocaleString('ko-KR')}
+              </span>
+            </div>
+          )}
           <CRow>
             <CCol xs={12} md={4}>
               <CCard className="mb-4">

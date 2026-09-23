@@ -35,11 +35,31 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener)
 }
 
-export function setSubscriptions(newOnes: Subscription[]) {
-  subscriptions = [...newOnes]
+export function addSubscription(subscription: Omit<Subscription, 'id'>) {
+  const withId: Subscription = { ...subscription, id: crypto.randomUUID() }
+  subscriptions = [withId, ...subscriptions]
+  save()
+}
+
+export function updateSubscription(id: string, updates: Partial<Omit<Subscription, 'id'>>) {
+  subscriptions = subscriptions.map((s) => (s.id === id ? { ...s, ...updates } : s))
+  save()
+}
+
+export function deleteSubscription(id: string) {
+  subscriptions = subscriptions.filter((s) => s.id !== id)
+  save()
+}
+
+// 엑셀 파일에서 가져와 병합 (이미 있는 건 건너뛰고 새 것만 추가됨). 반환값: 새로 추가된 건수.
+export function mergeSubscriptionsFromFile(incoming: Subscription[]): number {
+  const existingIds = new Set(subscriptions.map((s) => s.id))
+  const additions = incoming.filter((s) => !existingIds.has(s.id))
+  subscriptions = [...subscriptions, ...additions]
   lastSyncedAt = new Date().toISOString()
   localStorage.setItem(SYNCED_AT_KEY, lastSyncedAt)
   save()
+  return additions.length
 }
 
 export function useSubscriptions() {
