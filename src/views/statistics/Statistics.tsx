@@ -1,24 +1,13 @@
 import { useMemo, useState } from 'react'
-import {
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CFormSelect,
-  CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-} from '@coreui/react'
 import { CChartDoughnut } from '@coreui/react-chartjs'
 import { useTransactions } from '../../data/transactionStore'
 import { formatYearMonth, getYearMonth, filterByYearMonth, getCategoryTotals } from '../../data/transactionSelectors'
 import { getCategoryColor } from '../../data/categories'
 
 const currency = new Intl.NumberFormat('ko-KR')
+
+const cardClass = 'rounded-2xl p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] mb-4'
+const cardStyle = { backgroundColor: 'var(--color-surface)' }
 
 const Statistics = () => {
   const transactions = useTransactions()
@@ -39,129 +28,93 @@ const Statistics = () => {
 
   return (
     <>
-      <CCard className="mb-4">
-        <CCardHeader>카테고리별 통계</CCardHeader>
-        <CCardBody>
-          <CFormSelect
-            style={{ maxWidth: 200 }}
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-          >
-            {monthOptions.map((month) => (
-              <option key={month} value={month}>
-                {month}
-              </option>
-            ))}
-          </CFormSelect>
-        </CCardBody>
-      </CCard>
+      <div className={cardClass} style={cardStyle}>
+        <select
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          className="h-11 rounded-xl border px-3 text-sm"
+          style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}
+        >
+          {monthOptions.map((month) => (
+            <option key={month} value={month}>
+              {month}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <CRow>
-        <CCol xs={12} lg={6}>
-          <CCard className="mb-4">
-            <CCardHeader>지출 카테고리별 비중</CCardHeader>
-            <CCardBody>
-              {expenseTotals.length === 0 ? (
-                <p className="text-body-secondary mb-0">해당 월에 지출 내역이 없습니다.</p>
-              ) : (
-                <>
-                  <CChartDoughnut
-                    className="mb-4"
-                    data={{
-                      labels: expenseTotals.map((item) => item.category),
-                      datasets: [
-                        {
-                          data: expenseTotals.map((item) => item.amount),
-                          backgroundColor: expenseTotals.map((item) =>
-                            getCategoryColor('지출', item.category),
-                          ),
-                        },
-                      ],
-                    }}
-                    options={{ plugins: { legend: { position: 'bottom' } } }}
+      <div className={cardClass} style={cardStyle}>
+        <h2 className="text-base font-semibold mb-3">지출 카테고리별 비중</h2>
+        {expenseTotals.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            해당 월에 지출 내역이 없습니다.
+          </p>
+        ) : (
+          <>
+            <CChartDoughnut
+              className="mb-4"
+              data={{
+                labels: expenseTotals.map((item) => item.category),
+                datasets: [
+                  {
+                    data: expenseTotals.map((item) => item.amount),
+                    backgroundColor: expenseTotals.map((item) => getCategoryColor('지출', item.category)),
+                  },
+                ],
+              }}
+              options={{ plugins: { legend: { position: 'bottom' } } }}
+            />
+            <ul className="flex flex-col divide-y" style={{ borderColor: 'var(--color-border)' }}>
+              {expenseTotals.map((item) => (
+                <li key={item.category} className="flex justify-between items-center py-2">
+                  <span className="flex items-center gap-2 text-sm">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: getCategoryColor('지출', item.category) }}
+                    />
+                    {item.category}
+                  </span>
+                  <span className="text-sm text-right">
+                    {currency.format(item.amount)}원
+                    <span className="ml-2" style={{ color: 'var(--color-text-secondary)' }}>
+                      {((item.amount / expenseSum) * 100).toFixed(1)}%
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+
+      <div className={cardClass} style={cardStyle}>
+        <h2 className="text-base font-semibold mb-3">수입 출처별 금액</h2>
+        {incomeTotals.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            해당 월에 수입 내역이 없습니다.
+          </p>
+        ) : (
+          <ul className="flex flex-col divide-y" style={{ borderColor: 'var(--color-border)' }}>
+            {incomeTotals.map((item) => (
+              <li key={item.category} className="flex justify-between items-center py-2">
+                <span className="flex items-center gap-2 text-sm">
+                  <span
+                    className="inline-block h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: getCategoryColor('수입', item.category) }}
                   />
-                  <CTable small>
-                    <CTableHead>
-                      <CTableRow>
-                        <CTableHeaderCell>카테고리</CTableHeaderCell>
-                        <CTableHeaderCell className="text-end">금액</CTableHeaderCell>
-                        <CTableHeaderCell className="text-end">비중</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {expenseTotals.map((item) => (
-                        <CTableRow key={item.category}>
-                          <CTableDataCell>
-                            <span
-                              className="d-inline-block rounded-circle me-2"
-                              style={{
-                                width: 10,
-                                height: 10,
-                                backgroundColor: getCategoryColor('지출', item.category),
-                              }}
-                            />
-                            {item.category}
-                          </CTableDataCell>
-                          <CTableDataCell className="text-end">
-                            {currency.format(item.amount)}원
-                          </CTableDataCell>
-                          <CTableDataCell className="text-end">
-                            {((item.amount / expenseSum) * 100).toFixed(1)}%
-                          </CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </CTableBody>
-                  </CTable>
-                </>
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-
-        <CCol xs={12} lg={6}>
-          <CCard className="mb-4">
-            <CCardHeader>수입 출처별 금액</CCardHeader>
-            <CCardBody>
-              {incomeTotals.length === 0 ? (
-                <p className="text-body-secondary mb-0">해당 월에 수입 내역이 없습니다.</p>
-              ) : (
-                <CTable small>
-                  <CTableHead>
-                    <CTableRow>
-                      <CTableHeaderCell>카테고리</CTableHeaderCell>
-                      <CTableHeaderCell className="text-end">금액</CTableHeaderCell>
-                      <CTableHeaderCell className="text-end">비중</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {incomeTotals.map((item) => (
-                      <CTableRow key={item.category}>
-                        <CTableDataCell>
-                          <span
-                            className="d-inline-block rounded-circle me-2"
-                            style={{
-                              width: 10,
-                              height: 10,
-                              backgroundColor: getCategoryColor('수입', item.category),
-                            }}
-                          />
-                          {item.category}
-                        </CTableDataCell>
-                        <CTableDataCell className="text-end">
-                          {currency.format(item.amount)}원
-                        </CTableDataCell>
-                        <CTableDataCell className="text-end">
-                          {((item.amount / incomeSum) * 100).toFixed(1)}%
-                        </CTableDataCell>
-                      </CTableRow>
-                    ))}
-                  </CTableBody>
-                </CTable>
-              )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+                  {item.category}
+                </span>
+                <span className="text-sm text-right">
+                  {currency.format(item.amount)}원
+                  <span className="ml-2" style={{ color: 'var(--color-text-secondary)' }}>
+                    {((item.amount / incomeSum) * 100).toFixed(1)}%
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </>
   )
 }

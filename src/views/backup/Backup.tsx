@@ -1,10 +1,29 @@
 import { useRef, useState, type ChangeEvent } from 'react'
-import { CAlert, CButton, CCard, CCardBody, CCardHeader } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilCloudUpload } from '@coreui/icons'
 import { readBackupFile, shareOrDownloadBackup, type RestorePreview } from '../../data/backup'
 import { mergeTransactions, replaceAllTransactions, useTransactions } from '../../data/transactionStore'
 import { mergeSubscriptions, replaceAllSubscriptions, useSubscriptions } from '../../data/subscriptionStore'
+
+const cardClass = 'rounded-2xl p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] mb-4'
+const cardStyle = { backgroundColor: 'var(--color-surface)' }
+const primaryButtonClass = 'rounded-xl px-4 py-3 text-sm font-semibold text-white'
+const outlineButtonClass = 'rounded-xl px-4 py-3 text-sm font-semibold border'
+
+function AlertBox({ tone, children }: { tone: 'success' | 'warning' | 'danger' | 'info'; children: React.ReactNode }) {
+  const toneColors: Record<typeof tone, { bg: string; text: string }> = {
+    success: { bg: 'color-mix(in srgb, var(--color-income) 15%, transparent)', text: 'var(--color-income)' },
+    warning: { bg: 'color-mix(in srgb, #f59e0b 15%, transparent)', text: '#b45309' },
+    danger: { bg: 'color-mix(in srgb, var(--color-expense) 15%, transparent)', text: 'var(--color-expense)' },
+    info: { bg: 'color-mix(in srgb, var(--color-primary) 12%, transparent)', text: 'var(--color-text)' },
+  }
+  const { bg, text } = toneColors[tone]
+  return (
+    <div className="rounded-xl p-3 mt-3 text-sm" style={{ backgroundColor: bg, color: text }}>
+      {children}
+    </div>
+  )
+}
 
 const Backup = () => {
   const transactions = useTransactions()
@@ -79,124 +98,130 @@ const Backup = () => {
 
   return (
     <>
-      <CCard className="mb-4">
-        <CCardHeader>내보내기</CCardHeader>
-        <CCardBody>
-          <p className="text-body-secondary">
-            거래 내역 {transactions.length}건, 정기 구독 {subscriptions.length}건이 담긴 백업 파일을
-            만듭니다. 이 데이터는 이 기기의 브라우저에만 저장되어 있으니, 만들어진 파일을 디스코드
-            DM이나 파일 앱 등 안전한 곳에 보관해두세요.
-          </p>
-          <CButton color="primary" disabled={isSharing} onClick={() => void handleExport()}>
-            <CIcon icon={cilCloudDownload} className="me-2" />
-            {isSharing ? '만드는 중...' : '백업 파일 내보내기 / 공유'}
-          </CButton>
+      <div className={cardClass} style={cardStyle}>
+        <h2 className="text-base font-semibold mb-2">내보내기</h2>
+        <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+          거래 내역 {transactions.length}건, 정기 구독 {subscriptions.length}건이 담긴 백업 파일을
+          만듭니다. 이 데이터는 이 기기의 브라우저에만 저장되어 있으니, 만들어진 파일을 디스코드
+          DM이나 파일 앱 등 안전한 곳에 보관해두세요.
+        </p>
+        <button
+          type="button"
+          disabled={isSharing}
+          onClick={() => void handleExport()}
+          className={primaryButtonClass}
+          style={{ backgroundColor: 'var(--color-primary)' }}
+        >
+          <CIcon icon={cilCloudDownload} className="me-2" />
+          {isSharing ? '만드는 중...' : '백업 파일 내보내기 / 공유'}
+        </button>
 
-          {exportResult === 'shared' && (
-            <CAlert color="success" className="mt-3 mb-0">
-              공유 시트로 전달했습니다.
-            </CAlert>
-          )}
-          {exportResult === 'downloaded' && (
-            <CAlert color="success" className="mt-3 mb-0">
-              백업 파일을 다운로드했습니다.
-            </CAlert>
-          )}
-          {exportResult === 'cancelled' && (
-            <CAlert color="warning" className="mt-3 mb-0">
-              공유가 취소되었습니다.
-            </CAlert>
-          )}
-          {exportResult === 'error' && (
-            <CAlert color="danger" className="mt-3 mb-0">
-              백업 파일을 만드는 중 오류가 발생했습니다.
-            </CAlert>
-          )}
-        </CCardBody>
-      </CCard>
+        {exportResult === 'shared' && <AlertBox tone="success">공유 시트로 전달했습니다.</AlertBox>}
+        {exportResult === 'downloaded' && <AlertBox tone="success">백업 파일을 다운로드했습니다.</AlertBox>}
+        {exportResult === 'cancelled' && <AlertBox tone="warning">공유가 취소되었습니다.</AlertBox>}
+        {exportResult === 'error' && (
+          <AlertBox tone="danger">백업 파일을 만드는 중 오류가 발생했습니다.</AlertBox>
+        )}
+      </div>
 
-      <CCard className="mb-4">
-        <CCardHeader>복원</CCardHeader>
-        <CCardBody>
-          <p className="text-body-secondary">
-            백업 파일(.json)을 선택하면 내용을 확인한 뒤, 지금 데이터에 <strong>합칠지</strong>{' '}
-            아니면 <strong>완전히 교체</strong>할지 고를 수 있습니다.
-          </p>
-          <CButton color="secondary" variant="outline" onClick={() => fileInputRef.current?.click()}>
-            <CIcon icon={cilCloudUpload} className="me-2" />
-            백업 파일 선택
-          </CButton>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json,application/json"
-            className="d-none"
-            onChange={(e) => void handleFileSelected(e)}
-          />
+      <div className={cardClass} style={cardStyle}>
+        <h2 className="text-base font-semibold mb-2">복원</h2>
+        <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+          백업 파일(.json)을 선택하면 내용을 확인한 뒤, 지금 데이터에 <strong>합칠지</strong> 아니면{' '}
+          <strong>완전히 교체</strong>할지 고를 수 있습니다.
+        </p>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className={outlineButtonClass}
+          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+        >
+          <CIcon icon={cilCloudUpload} className="me-2" />
+          백업 파일 선택
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,application/json"
+          className="hidden"
+          onChange={(e) => void handleFileSelected(e)}
+        />
 
-          {readError && (
-            <CAlert color="danger" className="mt-3 mb-0">
-              {readError}
-            </CAlert>
-          )}
+        {readError && <AlertBox tone="danger">{readError}</AlertBox>}
+        {restoreResult && <AlertBox tone="success">{restoreResult}</AlertBox>}
 
-          {restoreResult && (
-            <CAlert color="success" className="mt-3 mb-0">
-              {restoreResult}
-            </CAlert>
-          )}
-
-          {preview && (
-            <CAlert color="info" className="mt-3">
-              <div className="mb-2">
-                이 백업 파일에는 거래 {preview.transactions.length}건, 구독{' '}
-                {preview.subscriptions.length}건이 있습니다.
-                {preview.exportedAt && (
-                  <>
-                    {' '}
-                    (내보낸 시각: {new Date(preview.exportedAt).toLocaleString('ko-KR')})
-                  </>
-                )}
-                {(preview.skippedTransactions > 0 || preview.skippedSubscriptions > 0) && (
-                  <div className="text-body-secondary small mt-1">
-                    형식이 맞지 않아 건너뛴 항목: 거래 {preview.skippedTransactions}건, 구독{' '}
-                    {preview.skippedSubscriptions}건
-                  </div>
-                )}
-              </div>
-
-              {!confirmingReplace ? (
-                <div className="d-flex gap-2 flex-wrap">
-                  <CButton color="primary" size="sm" onClick={handleMerge}>
-                    지금 데이터에 합치기
-                  </CButton>
-                  <CButton color="danger" variant="outline" size="sm" onClick={() => setConfirmingReplace(true)}>
-                    완전히 교체하기
-                  </CButton>
-                  <CButton color="secondary" variant="ghost" size="sm" onClick={cancelPreview}>
-                    취소
-                  </CButton>
-                </div>
-              ) : (
-                <div>
-                  <p className="fw-semibold mb-2">
-                    정말 교체할까요? 지금 있는 거래 {transactions.length}건, 구독{' '}
-                    {subscriptions.length}건은 사라지고 되돌릴 수 없습니다.
-                  </p>
-                  <div className="d-flex gap-2 flex-wrap">
-                    <CButton color="danger" size="sm" onClick={handleReplace}>
-                      네, 교체합니다
-                    </CButton>
-                    <CButton color="secondary" variant="ghost" size="sm" onClick={() => setConfirmingReplace(false)}>
-                      취소
-                    </CButton>
-                  </div>
+        {preview && (
+          <AlertBox tone="info">
+            <div className="mb-2">
+              이 백업 파일에는 거래 {preview.transactions.length}건, 구독 {preview.subscriptions.length}
+              건이 있습니다.
+              {preview.exportedAt && (
+                <> (내보낸 시각: {new Date(preview.exportedAt).toLocaleString('ko-KR')})</>
+              )}
+              {(preview.skippedTransactions > 0 || preview.skippedSubscriptions > 0) && (
+                <div className="text-xs mt-1" style={{ color: 'var(--color-text-secondary)' }}>
+                  형식이 맞지 않아 건너뛴 항목: 거래 {preview.skippedTransactions}건, 구독{' '}
+                  {preview.skippedSubscriptions}건
                 </div>
               )}
-            </CAlert>
-          )}
-        </CCardBody>
-      </CCard>
+            </div>
+
+            {!confirmingReplace ? (
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleMerge}
+                  className="rounded-lg px-3 py-2 text-xs font-semibold text-white"
+                  style={{ backgroundColor: 'var(--color-primary)' }}
+                >
+                  지금 데이터에 합치기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingReplace(true)}
+                  className="rounded-lg px-3 py-2 text-xs font-semibold border"
+                  style={{ borderColor: 'var(--color-expense)', color: 'var(--color-expense)' }}
+                >
+                  완전히 교체하기
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelPreview}
+                  className="rounded-lg px-3 py-2 text-xs"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  취소
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p className="font-semibold mb-2">
+                  정말 교체할까요? 지금 있는 거래 {transactions.length}건, 구독 {subscriptions.length}
+                  건은 사라지고 되돌릴 수 없습니다.
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleReplace}
+                    className="rounded-lg px-3 py-2 text-xs font-semibold text-white"
+                    style={{ backgroundColor: 'var(--color-expense)' }}
+                  >
+                    네, 교체합니다
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingReplace(false)}
+                    className="rounded-lg px-3 py-2 text-xs"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            )}
+          </AlertBox>
+        )}
+      </div>
     </>
   )
 }

@@ -1,13 +1,4 @@
-/*
- * 기록/설정 화면 일부는 아직 CoreUI(부트스트랩 기반) 컴포넌트를 그대로 쓰기 때문에
- * Tailwind의 preflight(기본 리셋)는 빼고, 유틸리티 클래스는 부트스트랩 클래스명과
- * 충돌하지 않도록 tw: 접두사를 붙여서 쓴다 (예: tw:flex). 새로 만드는 화면(홈 등)은
- * 전부 이 tw: 접두사 + 아래 디자인 토큰으로 스타일링한다.
- */
-@layer theme, utilities;
-
-@import "tailwindcss/theme.css" layer(theme) prefix(tw);
-@import "tailwindcss/utilities.css" layer(utilities) prefix(tw);
+@import 'tailwindcss';
 
 :root {
   color-scheme: light;
@@ -44,6 +35,7 @@
 }
 
 body {
+  margin: 0;
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family:
@@ -52,6 +44,34 @@ body {
     'Segoe UI',
     Roboto,
     sans-serif;
+}
+
+/* @coreui/icons-react의 CIcon 크기 클래스 (패키지 자체 CSS를 안전하게 못 불러와서 옮겨옴) */
+.icon {
+  display: inline-block;
+  color: inherit;
+  text-align: center;
+  fill: currentColor;
+}
+.icon:not(.icon-c-s):not(.icon-custom-size) {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+.icon:not(.icon-c-s):not(.icon-custom-size).icon-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+  font-size: 0.875rem;
+}
+.icon:not(.icon-c-s):not(.icon-custom-size).icon-lg {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+.icon:not(.icon-c-s):not(.icon-custom-size).icon-xl {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
 }
 
 @keyframes sheet-slide-up {

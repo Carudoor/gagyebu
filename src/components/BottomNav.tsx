@@ -11,7 +11,7 @@ const tabs = [
 const BottomNav = () => {
   return (
     <nav
-      className="tw:fixed tw:bottom-0 tw:left-0 tw:right-0 tw:z-40 tw:flex tw:justify-around tw:border-t tw:backdrop-blur-md"
+      className="fixed bottom-0 left-0 right-0 z-40 flex justify-around border-t backdrop-blur-md"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
         backgroundColor: 'color-mix(in srgb, var(--color-surface) 85%, transparent)',
@@ -22,7 +22,7 @@ const BottomNav = () => {
         <NavLink
           key={tab.to}
           to={tab.to}
-          className="tw:flex tw:flex-col tw:items-center tw:gap-1 tw:px-6 tw:py-2 tw:text-xs"
+          className="flex flex-col items-center gap-1 px-6 py-2 text-xs"
           style={({ isActive }) => ({
             color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
           })}

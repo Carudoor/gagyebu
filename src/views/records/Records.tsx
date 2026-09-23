@@ -15,10 +15,10 @@ const Records = () => {
   const [segment, setSegment] = useState<Segment>('transactions')
 
   return (
-    <div className="tw:pt-4">
-      <div className="tw:px-4 tw:mb-4">
+    <div className="pt-4">
+      <div className="px-4 mb-4">
         <div
-          className="tw:flex tw:rounded-xl tw:p-1"
+          className="flex rounded-xl p-1"
           style={{ backgroundColor: 'var(--color-border)' }}
         >
           {segments.map((s) => (
@@ -26,7 +26,7 @@ const Records = () => {
               key={s.key}
               type="button"
               onClick={() => setSegment(s.key)}
-              className="tw:flex-1 tw:rounded-lg tw:py-2 tw:text-sm tw:font-medium tw:transition-colors"
+              className="flex-1 rounded-lg py-2 text-sm font-medium transition-colors"
               style={
                 segment === s.key
                   ? { backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }
@@ -39,7 +39,7 @@ const Records = () => {
         </div>
       </div>
 
-      <div className="tw:px-2">
+      <div className="px-4">
         {segment === 'transactions' && <Transactions />}
         {segment === 'statistics' && <Statistics />}
         {segment === 'charts' && <Charts />}

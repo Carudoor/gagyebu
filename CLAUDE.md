@@ -21,9 +21,9 @@
    리디자인" 참고. 사이드바/헤더/브레드크럼 전부 삭제하고 하단 탭바 3개
    (홈/기록/설정)로 재구성함.
 
-## 모바일 UI 리디자인 (2026-09-23)
-**아직 절반만 끝남 — 홈 화면은 새 디자인으로 완전히 새로 만들었고, 기록/설정
-화면은 임시로 기존 CoreUI 화면을 얇은 세그먼트 탭 안에 그대로 넣어둔 상태.**
+## 모바일 UI 리디자인 (2026-09-23, 완료)
+처음엔 홈 화면만 새로 만들고 기록/설정은 임시로 기존 CoreUI 화면을 얇은
+세그먼트 탭 안에 넣어뒀었는데, "계속 진행해줘" 요청으로 전부 마무리함.
 
 - **디자인 토큰**: `src/index.css`에 라이트/다크 색상을 CSS 변수로 정의
   (primary `#6366F1`(다크 `#818CF8`), bg `#F9FAFB`/`#111827`,
@@ -47,27 +47,32 @@
   `header/AppHeaderDropdown.tsx`, `src/_nav.tsx`, `src/store.ts`(redux),
   `src/routes.tsx`, `src/views/dashboard/Dashboard.tsx`. `react-redux`/`redux`
   npm 패키지도 제거함(사이드바 UI 상태 관리 외엔 쓰던 곳이 없었음).
-- **홈 화면**(`src/views/home/Home.tsx`, 완전히 새 디자인): 그라데이션
-  히어로 카드(이번 달 잔액 + 지출/수입 진행률 바) + 최근 거래 카드 + 정기
-  구독 요약 카드. 전부 CoreUI 없이 순수 Tailwind(`tw:` 접두사) + 위 CSS
-  변수로만 스타일링함.
-- **기록 화면**(`src/views/records/Records.tsx`): 상단에 새 스타일 세그먼트
-  탭(거래/통계/그래프)을 두고, 그 아래 내용은 **기존 `Transactions.tsx`/
-  `Statistics.tsx`/`Charts.tsx`를 그대로(수정 없이) 렌더링** — 아직 CoreUI
-  Bootstrap 스타일 그대로라 새 디자인과 안 어울림(특히 좁은 화면에서 표가
-  가로 스크롤되는 부분). 다음에 카드 리스트 형태로 다시 만들 예정.
-- **설정 화면**(`src/views/settings/Settings.tsx`): 상단에 테마 선택
-  (라이트/다크/자동, 새 디자인) + 세그먼트 탭(정기 구독/백업), 아래는 기존
-  `Subscriptions.tsx`/`Backup.tsx` 그대로 렌더링. 마찬가지로 다음에 새
-  디자인으로 다시 만들 예정.
-- 390×844(아이폰 기준) 헤드리스 브라우저로 홈/기록/설정 라이트·다크 모드
-  전부 스크린샷 확인함. 기록 화면의 표는 가로 스크롤이 실제로 되는 것도
-  확인함(처음엔 깨진 것처럼 보였는데 스크롤 위치 문제였음).
-- **다음에 할 것**: 기록/설정 화면 내부(거래 입력 폼, 목록, 구독 목록,
-  백업 UI)를 전부 새 디자인 언어(카드 리스트, 바텀 시트 입력 폼 등)로
-  다시 만들기. 그 다음엔 CoreUI(`@coreui/react`, `@coreui/coreui` scss,
-  Tailwind `tw:` 접두사 hack)를 완전히 뗄 수 있음 — 지금은 기록/설정이
-  아직 그걸 쓰고 있어서 못 뗌.
+- **홈 화면**(`src/views/home/Home.tsx`): 그라데이션 히어로 카드(이번 달
+  잔액 + 지출/수입 진행률 바) + 최근 거래 카드 + 정기 구독 요약 카드.
+- **기록 화면**(`src/views/records/Records.tsx`): 상단 세그먼트 탭
+  (거래/통계/그래프). 거래(`Transactions.tsx`)는 카드 리스트 + 플로팅
+  `+` 버튼 → `BottomSheet`(`src/components/BottomSheet.tsx`, 아래서 위로
+  슬라이드하는 iOS 스타일 시트)로 입력 폼. 통계(`Statistics.tsx`)/그래프
+  (`Charts.tsx`)는 CoreUI 카드 대신 Tailwind 카드 안에 `CChartDoughnut`/
+  `CChartBar`(`@coreui/react-chartjs`)만 그대로 유지 — 이 패키지는 Chart.js
+  래퍼일 뿐이라 Bootstrap CSS 의존이 없어서 CoreUI 제거 후에도 문제없음.
+- **설정 화면**(`src/views/settings/Settings.tsx`): 테마 선택 + 세그먼트
+  탭(정기 구독/백업). 구독(`Subscriptions.tsx`)도 거래와 같은 카드 리스트 +
+  바텀시트 패턴. 백업(`Backup.tsx`)도 새 카드/버튼 스타일로 재작성.
+- **CoreUI 완전 제거**: 화면 전체에서 `@coreui/react`(Bootstrap 기반 컴포넌트)
+  사용을 다 걷어낸 뒤 `@coreui/react`, `@coreui/coreui`, `sass`,
+  `simplebar-react`, `@popperjs/core` npm 패키지와 `src/scss/` 폴더를 통째로
+  삭제함. Tailwind는 이제 `preflight` 다시 켜고 `tw:` 접두사도 없앰 (더 이상
+  Bootstrap과 공존할 필요가 없어짐) — CSS 번들이 315KB → 16KB로 줄어듦.
+  아이콘(`@coreui/icons-react`, `@coreui/icons`)과 차트
+  (`@coreui/react-chartjs`, `@coreui/chartjs`, `chart.js`)는 Bootstrap CSS에
+  의존하지 않아서 그대로 유지함.
+  - **주의**: `@coreui/icons-react`의 `CIcon`은 자체 CSS(`.icon`, `.icon-sm`
+    등 크기 클래스)가 있어야 정상 크기로 나오는데, 이 CSS를 패키지에서 안전하게
+    import할 방법이 없어서(해시된 dist 파일뿐) 필요한 규칙만 `src/index.css`에
+    직접 옮겨 적어둠. `size="..."` 새 값을 쓰게 되면 이 규칙도 같이 추가해야 함.
+- 390×844(아이폰 기준) 헤드리스 브라우저로 전체 화면(홈/기록/설정, 라이트·
+  다크), 바텀시트로 거래·구독 추가, 오프라인 재확인까지 전부 검증함.
 
 ## 데이터 저장 방식 (2026-09-23 최종 — 엑셀 우선 → 앱 우선 → 엑셀 완전 제거)
 처음엔 "엑셀 파일이 유일한 진실, 앱은 최신화 버튼으로 통째로 교체"하는
@@ -176,8 +181,8 @@
   4. ~~백업 파일 불러오기(복원)~~ — **2026-09-23 구현 완료** (아래 참고)
 
 ## 백업(내보내기/복원) (2026-09-23)
-- `src/data/backup.ts` + `src/views/backup/Backup.tsx`, 사이드바에 "백업"
-  메뉴 추가 (`/backup`).
+- `src/data/backup.ts` + `src/views/backup/Backup.tsx` — 지금은 설정 탭
+  안의 "백업" 세그먼트로 들어가 있음 (모바일 리디자인 이후, 아래 참고).
 - **내보내기**: 거래+구독 전체를 `{ schemaVersion, exportedAt, transactions,
   subscriptions }` JSON 파일 하나로 만듦 (`가계부_백업_YYYY-MM-DD.json`).
   **Web Share API**(`navigator.share`에 `files` 넘기기)를 우선 사용 — 지원되면

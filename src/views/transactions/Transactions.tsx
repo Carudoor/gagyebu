@@ -1,25 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import {
-  CBadge,
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CForm,
-  CFormInput,
-  CFormLabel,
-  CFormSelect,
-  CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-} from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash } from '@coreui/icons'
+import BottomSheet from '../../components/BottomSheet'
 import { addTransaction, deleteTransaction, useTransactions } from '../../data/transactionStore'
 import type { TransactionType } from '../../data/transaction'
 import {
@@ -31,12 +13,18 @@ import {
 
 const currency = new Intl.NumberFormat('ko-KR')
 
+const fieldClass =
+  'h-12 w-full rounded-xl border px-3 text-sm bg-transparent'
+const fieldStyle = { borderColor: 'var(--color-border)', color: 'var(--color-text)' }
+const labelClass = 'text-xs font-medium mb-1 block'
+
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
 const Transactions = () => {
   const transactions = useTransactions()
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const [date, setDate] = useState(todayStr())
   const [type, setType] = useState<TransactionType>('지출')
@@ -52,120 +40,164 @@ const Transactions = () => {
     setCategory(newType === '수입' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0])
   }
 
+  const resetForm = () => {
+    setDate(todayStr())
+    setType('지출')
+    setCategory(EXPENSE_CATEGORIES[0])
+    setAmount('')
+    setMemo('')
+  }
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     const amountNumber = Number(amount)
     if (!date || !amountNumber || amountNumber <= 0 || !category) return
 
     addTransaction({ date, type, category, amount: amountNumber, memo: memo.trim() || undefined })
-    setAmount('')
-    setMemo('')
+    resetForm()
+    setSheetOpen(false)
   }
 
   return (
-    <>
-      <CCard className="mb-4">
-        <CCardHeader>새 거래 추가</CCardHeader>
-        <CCardBody>
-          <CForm onSubmit={handleSubmit}>
-            <CRow className="g-3 align-items-end">
-              <CCol xs={6} md={2}>
-                <CFormLabel>날짜</CFormLabel>
-                <CFormInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-              </CCol>
-              <CCol xs={6} md={2}>
-                <CFormLabel>구분</CFormLabel>
-                <CFormSelect
-                  value={type}
-                  onChange={(e) => handleTypeChange(e.target.value as TransactionType)}
-                >
-                  <option value="지출">지출</option>
-                  <option value="수입">수입</option>
-                </CFormSelect>
-              </CCol>
-              <CCol xs={6} md={3}>
-                <CFormLabel>카테고리</CFormLabel>
-                <CFormSelect value={category} onChange={(e) => setCategory(e.target.value)}>
-                  {categoryOptions.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-              <CCol xs={6} md={2}>
-                <CFormLabel>금액</CFormLabel>
-                <CFormInput
-                  type="number"
-                  min={1}
-                  placeholder="0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </CCol>
-              <CCol xs={12} md={2}>
-                <CFormLabel>메모</CFormLabel>
-                <CFormInput value={memo} onChange={(e) => setMemo(e.target.value)} />
-              </CCol>
-              <CCol xs={12} md={1}>
-                <CButton type="submit" color="primary" className="w-100">
-                  <CIcon icon={cilPlus} />
-                </CButton>
-              </CCol>
-            </CRow>
-          </CForm>
-        </CCardBody>
-      </CCard>
+    <div className="relative">
+      <div
+        className="rounded-2xl p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]"
+        style={{ backgroundColor: 'var(--color-surface)' }}
+      >
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-base font-semibold">거래 내역 ({transactions.length}건)</h2>
+        </div>
 
-      <CCard className="mb-4">
-        <CCardHeader>거래 내역 ({transactions.length}건)</CCardHeader>
-        <CCardBody>
-          {transactions.length === 0 ? (
-            <p className="text-body-secondary mb-0">아직 등록된 거래가 없습니다.</p>
-          ) : (
-            <CTable hover responsive className="text-nowrap">
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>날짜</CTableHeaderCell>
-                  <CTableHeaderCell>구분</CTableHeaderCell>
-                  <CTableHeaderCell>카테고리</CTableHeaderCell>
-                  <CTableHeaderCell className="text-end">금액</CTableHeaderCell>
-                  <CTableHeaderCell>메모</CTableHeaderCell>
-                  <CTableHeaderCell> </CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {transactions.map((transaction) => (
-                  <CTableRow key={transaction.id}>
-                    <CTableDataCell>{transaction.date}</CTableDataCell>
-                    <CTableDataCell>
-                      <CBadge color={transaction.type === '수입' ? 'success' : 'danger'}>
-                        {transaction.type}
-                      </CBadge>
-                    </CTableDataCell>
-                    <CTableDataCell>{transaction.category}</CTableDataCell>
-                    <CTableDataCell className="text-end">
-                      {currency.format(transaction.amount)}원
-                    </CTableDataCell>
-                    <CTableDataCell>{transaction.memo}</CTableDataCell>
-                    <CTableDataCell>
-                      <CButton
-                        color="danger"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteTransaction(transaction.id)}
-                      >
-                        <CIcon icon={cilTrash} />
-                      </CButton>
-                    </CTableDataCell>
-                  </CTableRow>
+        {transactions.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            아직 등록된 거래가 없습니다. 오른쪽 아래 + 버튼으로 추가해보세요.
+          </p>
+        ) : (
+          <ul className="flex flex-col divide-y" style={{ borderColor: 'var(--color-border)' }}>
+            {transactions.map((transaction) => (
+              <li key={transaction.id} className="flex justify-between items-center py-2 gap-2">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm truncate">{transaction.category}</span>
+                  <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                    {transaction.date}
+                    {transaction.memo && ` · ${transaction.memo}`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className="text-sm font-semibold"
+                    style={{ color: transaction.type === '수입' ? 'var(--color-income)' : 'var(--color-expense)' }}
+                  >
+                    {transaction.type === '수입' ? '+' : '-'}
+                    {currency.format(transaction.amount)}원
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => deleteTransaction(transaction.id)}
+                    className="p-1"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                    aria-label="삭제"
+                  >
+                    <CIcon icon={cilTrash} size="sm" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setSheetOpen(true)}
+        className="fixed z-30 flex items-center justify-center h-14 w-14 rounded-full text-white shadow-lg"
+        style={{
+          backgroundColor: 'var(--color-primary)',
+          right: '1.25rem',
+          bottom: 'calc(5.5rem + env(safe-area-inset-bottom))',
+        }}
+        aria-label="새 거래 추가"
+      >
+        <CIcon icon={cilPlus} size="xl" />
+      </button>
+
+      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="새 거래 추가">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>날짜</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className={fieldClass}
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>구분</label>
+              <select
+                value={type}
+                onChange={(e) => handleTypeChange(e.target.value as TransactionType)}
+                className={fieldClass}
+                style={fieldStyle}
+              >
+                <option value="지출">지출</option>
+                <option value="수입">수입</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>카테고리</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={fieldClass}
+                style={fieldStyle}
+              >
+                {categoryOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
-              </CTableBody>
-            </CTable>
-          )}
-        </CCardBody>
-      </CCard>
-    </>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>금액</label>
+              <input
+                type="number"
+                min={1}
+                placeholder="0"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className={fieldClass}
+                style={fieldStyle}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>메모</label>
+            <input
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              className={fieldClass}
+              style={fieldStyle}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="h-13 w-full rounded-xl py-3 text-white font-semibold mt-2"
+            style={{ backgroundColor: 'var(--color-primary)' }}
+          >
+            저장하기
+          </button>
+        </form>
+      </BottomSheet>
+    </div>
   )
 }
 

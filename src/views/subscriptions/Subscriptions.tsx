@@ -1,25 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import {
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CForm,
-  CFormCheck,
-  CFormInput,
-  CFormLabel,
-  CFormSelect,
-  CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-} from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPlus, cilTrash } from '@coreui/icons'
+import BottomSheet from '../../components/BottomSheet'
 import type { SubscriptionCycle } from '../../data/subscription'
 import {
   addSubscription,
@@ -32,12 +14,19 @@ import { formatYearMonth } from '../../data/transactionSelectors'
 
 const currency = new Intl.NumberFormat('ko-KR')
 
+const cardClass = 'rounded-2xl p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] mb-4'
+const cardStyle = { backgroundColor: 'var(--color-surface)' }
+const fieldClass = 'h-12 w-full rounded-xl border px-3 text-sm bg-transparent'
+const fieldStyle = { borderColor: 'var(--color-border)', color: 'var(--color-text)' }
+const labelClass = 'text-xs font-medium mb-1 block'
+
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
 const Subscriptions = () => {
   const subscriptions = useSubscriptions()
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
@@ -46,6 +35,16 @@ const Subscriptions = () => {
   const [cycle, setCycle] = useState<SubscriptionCycle>('매월')
   const [startDate, setStartDate] = useState(todayStr())
   const [memo, setMemo] = useState('')
+
+  const resetForm = () => {
+    setName('')
+    setCategory('')
+    setAmount('')
+    setBillingDay('1')
+    setCycle('매월')
+    setStartDate(todayStr())
+    setMemo('')
+  }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
@@ -64,10 +63,8 @@ const Subscriptions = () => {
       active: true,
       memo: memo.trim() || undefined,
     })
-    setName('')
-    setCategory('')
-    setAmount('')
-    setMemo('')
+    resetForm()
+    setSheetOpen(false)
   }
 
   const thisMonth = formatYearMonth(new Date())
@@ -75,138 +72,164 @@ const Subscriptions = () => {
   const activeCount = subscriptions.filter((s) => s.active).length
 
   return (
-    <>
-      <CCard className="mb-4">
-        <CCardHeader>새 구독 추가</CCardHeader>
-        <CCardBody>
-          <CForm onSubmit={handleSubmit}>
-            <CRow className="g-3 align-items-end">
-              <CCol xs={12} md={2}>
-                <CFormLabel>이름</CFormLabel>
-                <CFormInput value={name} onChange={(e) => setName(e.target.value)} />
-              </CCol>
-              <CCol xs={6} md={2}>
-                <CFormLabel>카테고리</CFormLabel>
-                <CFormInput value={category} onChange={(e) => setCategory(e.target.value)} />
-              </CCol>
-              <CCol xs={6} md={2}>
-                <CFormLabel>금액</CFormLabel>
-                <CFormInput
-                  type="number"
-                  min={1}
-                  placeholder="0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                />
-              </CCol>
-              <CCol xs={4} md={1}>
-                <CFormLabel>결제일</CFormLabel>
-                <CFormInput
-                  type="number"
-                  min={1}
-                  max={31}
-                  value={billingDay}
-                  onChange={(e) => setBillingDay(e.target.value)}
-                />
-              </CCol>
-              <CCol xs={4} md={1}>
-                <CFormLabel>주기</CFormLabel>
-                <CFormSelect value={cycle} onChange={(e) => setCycle(e.target.value as SubscriptionCycle)}>
-                  <option value="매월">매월</option>
-                  <option value="매년">매년</option>
-                </CFormSelect>
-              </CCol>
-              <CCol xs={4} md={2}>
-                <CFormLabel>시작일</CFormLabel>
-                <CFormInput type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-              </CCol>
-              <CCol xs={10} md={1}>
-                <CFormLabel>메모</CFormLabel>
-                <CFormInput value={memo} onChange={(e) => setMemo(e.target.value)} />
-              </CCol>
-              <CCol xs={2} md={1}>
-                <CButton type="submit" color="primary" className="w-100">
-                  <CIcon icon={cilPlus} />
-                </CButton>
-              </CCol>
-            </CRow>
-          </CForm>
-        </CCardBody>
-      </CCard>
+    <div className="relative">
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className={cardClass.replace('mb-4', '')} style={cardStyle}>
+          <p className="text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            이번 달 예상 고정비
+          </p>
+          <p className="text-lg font-bold">{currency.format(monthlyProjection)}원</p>
+        </div>
+        <div className={cardClass.replace('mb-4', '')} style={cardStyle}>
+          <p className="text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+            활성 구독 수
+          </p>
+          <p className="text-lg font-bold">{activeCount}개</p>
+        </div>
+      </div>
 
-      <CRow>
-        <CCol xs={12} md={6}>
-          <CCard className="mb-4">
-            <CCardHeader>이번 달 예상 고정비</CCardHeader>
-            <CCardBody className="fs-4">{currency.format(monthlyProjection)}원</CCardBody>
-          </CCard>
-        </CCol>
-        <CCol xs={12} md={6}>
-          <CCard className="mb-4">
-            <CCardHeader>활성 구독 수</CCardHeader>
-            <CCardBody className="fs-4">{activeCount}개</CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+      <div className={cardClass} style={cardStyle}>
+        <h2 className="text-base font-semibold mb-3">
+          정기 구독 목록 ({subscriptions.length}건)
+        </h2>
+        {subscriptions.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            아직 등록된 정기 구독이 없습니다. 오른쪽 아래 + 버튼으로 추가해보세요.
+          </p>
+        ) : (
+          <ul className="flex flex-col divide-y" style={{ borderColor: 'var(--color-border)' }}>
+            {subscriptions.map((subscription) => (
+              <li key={subscription.id} className="flex justify-between items-center py-3 gap-2">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-medium truncate">{subscription.name}</span>
+                  <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                    {subscription.category} · {subscription.cycle} · 다음 결제{' '}
+                    {getNextBillingDate(subscription) ?? '-'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-sm font-semibold">{currency.format(subscription.amount)}원</span>
+                  <button
+                    type="button"
+                    onClick={() => updateSubscription(subscription.id, { active: !subscription.active })}
+                    className="rounded-full px-2 py-1 text-xs font-medium"
+                    style={
+                      subscription.active
+                        ? { backgroundColor: 'color-mix(in srgb, var(--color-income) 15%, transparent)', color: 'var(--color-income)' }
+                        : { backgroundColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }
+                    }
+                  >
+                    {subscription.active ? '활성' : '비활성'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteSubscription(subscription.id)}
+                    className="p-1"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                    aria-label="삭제"
+                  >
+                    <CIcon icon={cilTrash} size="sm" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-      <CCard className="mb-4">
-        <CCardHeader>정기 구독 목록 ({subscriptions.length}건)</CCardHeader>
-        <CCardBody>
-          {subscriptions.length === 0 ? (
-            <p className="text-body-secondary mb-0">아직 등록된 정기 구독이 없습니다.</p>
-          ) : (
-            <CTable hover responsive className="text-nowrap">
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>이름</CTableHeaderCell>
-                  <CTableHeaderCell>카테고리</CTableHeaderCell>
-                  <CTableHeaderCell className="text-end">금액</CTableHeaderCell>
-                  <CTableHeaderCell>주기</CTableHeaderCell>
-                  <CTableHeaderCell>다음 결제일</CTableHeaderCell>
-                  <CTableHeaderCell>상태</CTableHeaderCell>
-                  <CTableHeaderCell> </CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {subscriptions.map((subscription) => {
-                  const nextBillingDate = getNextBillingDate(subscription)
-                  return (
-                    <CTableRow key={subscription.id}>
-                      <CTableDataCell>{subscription.name}</CTableDataCell>
-                      <CTableDataCell>{subscription.category}</CTableDataCell>
-                      <CTableDataCell className="text-end">
-                        {currency.format(subscription.amount)}원
-                      </CTableDataCell>
-                      <CTableDataCell>{subscription.cycle}</CTableDataCell>
-                      <CTableDataCell>{nextBillingDate ?? '-'}</CTableDataCell>
-                      <CTableDataCell>
-                        <CFormCheck
-                          checked={subscription.active}
-                          label={subscription.active ? '활성' : '비활성'}
-                          onChange={(e) =>
-                            updateSubscription(subscription.id, { active: e.target.checked })
-                          }
-                        />
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        <CButton
-                          color="danger"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteSubscription(subscription.id)}
-                        >
-                          <CIcon icon={cilTrash} />
-                        </CButton>
-                      </CTableDataCell>
-                    </CTableRow>
-                  )
-                })}
-              </CTableBody>
-            </CTable>
-          )}
-        </CCardBody>
-      </CCard>
-    </>
+      <button
+        type="button"
+        onClick={() => setSheetOpen(true)}
+        className="fixed z-30 flex items-center justify-center h-14 w-14 rounded-full text-white shadow-lg"
+        style={{
+          backgroundColor: 'var(--color-primary)',
+          right: '1.25rem',
+          bottom: 'calc(5.5rem + env(safe-area-inset-bottom))',
+        }}
+        aria-label="새 구독 추가"
+      >
+        <CIcon icon={cilPlus} size="xl" />
+      </button>
+
+      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="새 구독 추가">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div>
+            <label className={labelClass}>이름</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className={fieldClass} style={fieldStyle} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>카테고리</label>
+              <input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={fieldClass}
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>금액</label>
+              <input
+                type="number"
+                min={1}
+                placeholder="0"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className={fieldClass}
+                style={fieldStyle}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className={labelClass}>결제일</label>
+              <input
+                type="number"
+                min={1}
+                max={31}
+                value={billingDay}
+                onChange={(e) => setBillingDay(e.target.value)}
+                className={fieldClass}
+                style={fieldStyle}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>주기</label>
+              <select
+                value={cycle}
+                onChange={(e) => setCycle(e.target.value as SubscriptionCycle)}
+                className={fieldClass}
+                style={fieldStyle}
+              >
+                <option value="매월">매월</option>
+                <option value="매년">매년</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>시작일</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className={fieldClass}
+                style={fieldStyle}
+              />
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>메모</label>
+            <input value={memo} onChange={(e) => setMemo(e.target.value)} className={fieldClass} style={fieldStyle} />
+          </div>
+          <button
+            type="submit"
+            className="h-13 w-full rounded-xl py-3 text-white font-semibold mt-2"
+            style={{ backgroundColor: 'var(--color-primary)' }}
+          >
+            저장하기
+          </button>
+        </form>
+      </BottomSheet>
+    </div>
   )
 }
 
