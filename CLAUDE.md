@@ -65,14 +65,32 @@ CoreUI는 React 19 + **Bootstrap 5** 기반이라 원래 스택 선택 이유(Ta
   아이폰에서 실제로 열려면 이 앱이 어딘가에 호스팅되어 있어야 함 (같은
   와이파이의 PC를 계속 켜두거나, 나중에 정적 호스팅에 올리거나) — 아직 미정.
 
-## Git / GitHub (2026-09-23)
-- 로컬 저장소 초기화 완료, GitHub에도 연결함: https://github.com/Carudoor/gagyebu (Private)
+## Git / GitHub / 배포 (2026-09-23)
+- 로컬 저장소 초기화 완료, GitHub에도 연결함: https://github.com/Carudoor/gagyebu
 - 이 PC에 GitHub CLI가 원래 없었음 — winget으로 설치 시도했으나 관리자 권한
   설치가 UAC 프롬프트에 막혀서, 포터블 버전(`~/AppData/Local/gh-portable/bin/gh.exe`,
   PATH에는 안 걸려있음)으로 대신 설치하고 그걸로 로그인·저장소 생성·push함.
 - `public/data/*.xlsx`는 지금은 샘플 데이터만 들어있음 — 실제 가계부 데이터로
   채우면 git 히스토리에 그대로 남는다는 점 사용자에게 안내함 (원하면 나중에
   .gitignore 처리 가능).
+- **GitHub Pages로 배포함** (아이폰 PWA 설치/업데이트 접속용).
+  Private 저장소는 무료 플랜에서 Pages가 안 돼서(API로 직접 확인:
+  "current plan does not support GitHub Pages for this repository") 사용자
+  확인 후 **저장소를 Public으로 전환**함 — 코드는 공개되지만 실제 가계부
+  데이터는 브라우저 localStorage에만 있어서 데이터 유출은 아님. 커밋 전에
+  이메일/시크릿 없는지 grep으로 확인함.
+  - 배포 주소: https://carudoor.github.io/gagyebu/
+  - `vite.config.ts`에 `base: '/gagyebu/'` 설정 (서브패스 배포라서 필요).
+    PWA manifest의 `start_url`/`scope`/아이콘 경로도 전부 이 base를 씀.
+  - `transactionSync.ts`/`subscriptionSync.ts`의 엑셀 fetch는
+    `import.meta.env.BASE_URL`로 base를 붙여서 요청 — 하드코딩된 `/data/...`
+    쓰면 서브패스 배포에서 404 남.
+  - `.github/workflows/deploy.yml`: master에 push되면 자동 빌드 + Pages 배포
+    (actions/upload-pages-artifact + deploy-pages). 앞으로 커밋 push하면
+    자동으로 사이트에 반영됨.
+  - 로컬에서 `npm run preview`로 `/gagyebu/` 서브패스 서빙 확인, 헤드리스
+    브라우저로 서브패스 하에서 엑셀 가져오기·서비스워커 등록·오프라인
+    새로고침까지 전부 재검증함.
 
 ## 카테고리별 통계 / 그래프 / 정기 구독 (2026-09-23, Codex와 설계 상의 후 구현)
 - 공통 선택자: `src/data/transactionSelectors.ts` (월별 필터, 합계, 카테고리

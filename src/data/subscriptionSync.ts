@@ -1,9 +1,12 @@
 import { parseSubscriptionFile, type SubscriptionImportResult } from './subscriptionImport'
 
+// public/ 기준 표시용 경로 (안내 문구에 사용). 실제 fetch는 배포 base 경로를 붙여서 함.
 export const SUBSCRIPTIONS_FILE_URL = '/data/subscriptions.xlsx'
 
 export async function syncSubscriptionsFromProjectFile(): Promise<SubscriptionImportResult> {
-  const response = await fetch(SUBSCRIPTIONS_FILE_URL, { cache: 'no-store' })
+  const response = await fetch(`${import.meta.env.BASE_URL}data/subscriptions.xlsx`, {
+    cache: 'no-store',
+  })
   if (!response.ok) {
     return {
       subscriptions: [],
