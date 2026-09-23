@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { CBadge, CButton, CCard, CCardBody, CCardHeader, CCol, CRow } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCreditCard } from '@coreui/icons'
-import { useLastSyncedAt, useTransactions } from '../../data/transactionStore'
+import { useTransactions } from '../../data/transactionStore'
 import {
   formatYearMonth,
   filterByYearMonth,
@@ -17,7 +17,6 @@ const currency = new Intl.NumberFormat('ko-KR')
 
 const Dashboard = () => {
   const transactions = useTransactions()
-  const lastSyncedAt = useLastSyncedAt()
   const subscriptions = useSubscriptions()
 
   const thisMonth = formatYearMonth(new Date())
@@ -40,13 +39,6 @@ const Dashboard = () => {
         </CCard>
       ) : (
         <>
-          {lastSyncedAt && (
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <span className="text-body-secondary small">
-                마지막으로 엑셀에서 가져온 시각: {new Date(lastSyncedAt).toLocaleString('ko-KR')}
-              </span>
-            </div>
-          )}
           <CRow>
             <CCol xs={12} md={4}>
               <CCard className="mb-4">

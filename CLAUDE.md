@@ -27,34 +27,31 @@ CoreUI는 React 19 + **Bootstrap 5** 기반이라 원래 스택 선택 이유(Ta
 (대시보드/거래 내역/카테고리별 통계/그래프/정기 구독 관리) 전부 실 데이터로
 동작함 (2026-09-23 기준).
 
-## 데이터 저장 방식 (2026-09-23 최종 — 엑셀 우선 → 앱 우선으로 전환)
+## 데이터 저장 방식 (2026-09-23 최종 — 엑셀 우선 → 앱 우선 → 엑셀 완전 제거)
 처음엔 "엑셀 파일이 유일한 진실, 앱은 최신화 버튼으로 통째로 교체"하는
-방식으로 시작했는데, 사용자가 "엑셀 없이 앱에서 바로 입력"하고 싶어하고
-"아이폰에서도 오프라인으로 쓰고 싶다"고 해서 구조를 바꿈:
+방식으로 시작했다가, 사용자가 "엑셀 없이 앱에서 바로 입력"하고 싶어하고
+"아이폰에서도 오프라인으로 쓰고 싶다"고 해서 앱(localStorage) 우선으로
+바꿨고, 그 다음엔 **엑셀 가져오기 기능 자체를 완전히 삭제**함 (앱 내 입력만으로
+충분하다고 판단). 지금은:
 
-- **지금은 브라우저 localStorage가 진짜 저장소**임. 거래/구독을 앱 화면의
-  폼으로 바로 추가·삭제함 (`addTransaction`/`deleteTransaction`,
+- **브라우저 localStorage가 유일한 저장소**임. 거래/구독을 앱 화면의 폼으로
+  바로 추가·수정·삭제함 (`addTransaction`/`updateTransaction`/`deleteTransaction`,
   `addSubscription`/`updateSubscription`/`deleteSubscription` in
-  `src/data/transactionStore.ts` / `subscriptionStore.ts`).
-- `public/data/transactions.xlsx`, `public/data/subscriptions.xlsx`는
-  이제 **선택적 대량 가져오기용**으로만 씀 (예: 과거 내역 한 번에 넣기).
-  "엑셀에서 가져오기" 버튼은 더 이상 전체 교체가 아니라 **병합**
-  (`mergeTransactionsFromFile`/`mergeSubscriptionsFromFile`) — 이미 있는
-  항목(id 기준)은 건너뛰고 새 항목만 추가되므로, 앱에서 직접 입력한 데이터가
-  최신화 때문에 사라지지 않음. 여러 번 눌러도 중복 추가 안 되는 것 확인함.
-- id는 두 가지 방식: 앱에서 직접 추가한 건 `crypto.randomUUID()`(한 번만
-  생기면 되니까), 엑셀에서 가져온 건 행 내용 기반 해시(`src/data/stableId.ts`)
-  — 그래서 같은 파일을 여러 번 가져와도 중복되지 않음.
-- 엑셀 읽기/쓰기는 `read-excel-file` / `write-excel-file` 사용 (SheetJS `xlsx`
-  패키지는 npm에 미패치 취약점이 있어서 제외함).
-- 화면에서 개별 삭제 가능(휴지통 버튼) — 이제 앱이 진실이므로 삭제해도
-  다시 살아나지 않음.
+  `src/data/transactionStore.ts` / `subscriptionStore.ts`). id는
+  `crypto.randomUUID()`.
+- 엑셀 관련 파일/의존성은 전부 제거함: `transactionSync.ts`,
+  `subscriptionSync.ts`, `transactionImport.ts`, `subscriptionImport.ts`,
+  `transactionTemplate.ts`, `subscriptionTemplate.ts`, `stableId.ts`,
+  `dateParsing.ts`, `importError.ts`, `public/data/*.xlsx`,
+  `read-excel-file`/`write-excel-file` npm 패키지 — 한때 이런 게 있었다는
+  기록만 남김. 되살릴 필요 생기면 git 히스토리에서 찾을 것.
+- 화면에서 개별 삭제 가능(휴지통 버튼).
 
 ## PWA / 오프라인 지원 (2026-09-23)
 - `vite-plugin-pwa` 적용 (`vite.config.ts`) — 빌드하면 서비스워커가 앱
-  전체(JS/CSS/HTML/아이콘/엑셀 템플릿)를 프리캐시해서, 오프라인에서도 앱이
-  뜨고 localStorage 데이터도 그대로 보임 (헤드리스 브라우저로 오프라인 전환
-  후 새로고침해서 확인함).
+  전체(JS/CSS/HTML/아이콘)를 프리캐시해서, 오프라인에서도 앱이 뜨고
+  localStorage 데이터도 그대로 보임 (헤드리스 브라우저로 오프라인 전환 후
+  새로고침해서 확인함, 로컬/실제 배포 사이트 둘 다).
 - 라우팅이 `HashRouter`라서 (모든 경로가 `index.html` 하나 밑의 `#/...`)
   오프라인 SPA에서 흔한 "새로고침하면 404" 문제 자체가 없음.
 - 아이콘: `public/pwa-192.png`, `public/pwa-512.png`, `public/apple-touch-icon.png`
@@ -62,17 +59,15 @@ CoreUI는 React 19 + **Bootstrap 5** 기반이라 원래 스택 선택 이유(Ta
 - 아이폰에서 "홈 화면에 추가"하면 아이콘 있는 독립 앱처럼 실행됨
   (`apple-mobile-web-app-capable` 메타 태그 적용). 네이티브 App Store 앱은
   Mac+Xcode+개발자 계정이 필요해서 개인용으로는 배보다 배꼽 — PWA로 결정.
-  아이폰에서 실제로 열려면 이 앱이 어딘가에 호스팅되어 있어야 함 (같은
-  와이파이의 PC를 계속 켜두거나, 나중에 정적 호스팅에 올리거나) — 아직 미정.
+  아이폰에서 실제로 열려면(설치/업데이트 시점에만) 이 앱이 어딘가에
+  호스팅되어 있어야 함 — 아래 "Git / GitHub / 배포" 참고, GitHub Pages로
+  해결함.
 
 ## Git / GitHub / 배포 (2026-09-23)
 - 로컬 저장소 초기화 완료, GitHub에도 연결함: https://github.com/Carudoor/gagyebu
 - 이 PC에 GitHub CLI가 원래 없었음 — winget으로 설치 시도했으나 관리자 권한
   설치가 UAC 프롬프트에 막혀서, 포터블 버전(`~/AppData/Local/gh-portable/bin/gh.exe`,
   PATH에는 안 걸려있음)으로 대신 설치하고 그걸로 로그인·저장소 생성·push함.
-- `public/data/*.xlsx`는 지금은 샘플 데이터만 들어있음 — 실제 가계부 데이터로
-  채우면 git 히스토리에 그대로 남는다는 점 사용자에게 안내함 (원하면 나중에
-  .gitignore 처리 가능).
 - **GitHub Pages로 배포함** (아이폰 PWA 설치/업데이트 접속용).
   Private 저장소는 무료 플랜에서 Pages가 안 돼서(API로 직접 확인:
   "current plan does not support GitHub Pages for this repository") 사용자
@@ -82,15 +77,13 @@ CoreUI는 React 19 + **Bootstrap 5** 기반이라 원래 스택 선택 이유(Ta
   - 배포 주소: https://carudoor.github.io/gagyebu/
   - `vite.config.ts`에 `base: '/gagyebu/'` 설정 (서브패스 배포라서 필요).
     PWA manifest의 `start_url`/`scope`/아이콘 경로도 전부 이 base를 씀.
-  - `transactionSync.ts`/`subscriptionSync.ts`의 엑셀 fetch는
-    `import.meta.env.BASE_URL`로 base를 붙여서 요청 — 하드코딩된 `/data/...`
-    쓰면 서브패스 배포에서 404 남.
+    이후 절대경로로 fetch하는 걸 추가하게 되면 `import.meta.env.BASE_URL`을
+    붙여야 서브패스 배포에서 404 안 남 (엑셀 fetch 코드는 이제 삭제됨).
   - `.github/workflows/deploy.yml`: master에 push되면 자동 빌드 + Pages 배포
     (actions/upload-pages-artifact + deploy-pages). 앞으로 커밋 push하면
     자동으로 사이트에 반영됨.
-  - 로컬에서 `npm run preview`로 `/gagyebu/` 서브패스 서빙 확인, 헤드리스
-    브라우저로 서브패스 하에서 엑셀 가져오기·서비스워커 등록·오프라인
-    새로고침까지 전부 재검증함.
+  - 로컬 `npm run preview`와 실제 배포 사이트 둘 다 헤드리스 브라우저로
+    서비스워커 등록·오프라인 새로고침 재검증함.
 
 ## 카테고리별 통계 / 그래프 / 정기 구독 (2026-09-23, Codex와 설계 상의 후 구현)
 - 공통 선택자: `src/data/transactionSelectors.ts` (월별 필터, 합계, 카테고리
@@ -103,38 +96,34 @@ CoreUI는 React 19 + **Bootstrap 5** 기반이라 원래 스택 선택 이유(Ta
   무채색으로 표시됨.
 - 그래프는 `@coreui/react-chartjs`(Chart.js) 사용 — 이미 CoreUI 템플릿
   의존성에 포함되어 있던 것.
-- 정기 구독: `public/data/subscriptions.xlsx`가 별도 소스 오브 트루스
-  (이름/카테고리/금액/결제일/주기(매월·매년)/시작일/종료일/활성/메모).
-  거래 내역과 완전히 분리된 파일/스토어(`src/data/subscription*.ts`) —
+- 정기 구독: 거래 내역과 완전히 분리된 데이터/스토어
+  (`src/data/subscription.ts`, `subscriptionStore.ts`, `subscriptionSelectors.ts`)
+  — 필드는 이름/카테고리/금액/결제일/주기(매월·매년)/시작일/종료일/활성/메모.
   **구독이 거래를 자동으로 만들지 않음**. 실제 결제되면 사용자가 거래 내역
   페이지에서 직접 기록해야 함. 정기 구독 페이지는 "다음 결제일"과
   "이번 달 예상 고정비"만 보여주는 전망(projection) 용도.
 
 ## 오프라인 완전 지원 설계 (2026-09-23, Codex와 상의 — 아직 미구현, 계획만)
-지금 PWA 오프라인은 "이미 있는 데이터 보고 CRUD" 수준까지만 검증됨. 완전한
-오프라인 대응을 위해 다음을 계획함 (구현은 아직 안 함):
+지금 PWA 오프라인은 "이미 있는 데이터 보고 CRUD" 수준까지만 검증됨
+(로컬 preview + 실제 GitHub Pages 배포 사이트 둘 다). 완전한 오프라인
+대응을 위해 다음을 계획함 (구현은 아직 안 함). 엑셀 가져오기 기능은 이후
+완전히 삭제됐으므로, 이 계획 중 엑셀 관련 항목(양식에 고유 ID 컬럼 추가 등)은
+더 이상 해당 없음 — id는 이제 항상 `crypto.randomUUID()`라 이 문제 자체가 없음:
 
 - **원칙**: 앱 코드(서비스워커 프리캐시)와 사용자 데이터(localStorage)를
   분리해서 다루고, 업데이트 편의성보다 데이터 보호를 항상 우선한다.
 - **알려진 위험**: 지금 서비스워커가 `registerType: 'autoUpdate'`라서 새
   배포가 뜨면 바로 활성화됨 — 나중에 저장 포맷(Transaction/Subscription
-  shape)이 바뀌는 업데이트를 내면 안전장치가 없음. 또한 지금의 id 중복방지
-  (`stableId.ts`)는 "같은 엑셀 재가져오기"엔 맞지만 "행 내용 수정"이나
-  "수동입력과 우연히 내용이 같은 엑셀 행"에는 안전하지 않음(오병합 위험) —
-  당장 바꾸지 않기로 함, 대신 다음 엑셀 양식에 진짜 고유 ID 컬럼을 추가하는
-  쪽으로 계획.
+  shape)이 바뀌는 업데이트를 내면 안전장치가 없음.
 - **다음에 할 것(순서대로)**:
   1. 서비스워커를 "업데이트 있음—백업 후 적용" 방식으로 전환 + 저장 포맷
      버전 체크
   2. localStorage 유지, 저장 포맷에 버전/마이그레이션 규칙 추가
      (IndexedDB 전환은 저장 실패·대용량·첨부파일 필요해질 때로 미룸)
-  3. 엑셀 양식에 고유 ID 컬럼 추가해서 수정 반영이 안전해지게
-  4. 거래+구독을 하나의 JSON으로 내보내기/불러오기(백업·복원) 기능 추가 —
+  3. 거래+구독을 하나의 JSON으로 내보내기/불러오기(백업·복원) 기능 추가 —
      복원 전 요약 + 병합/교체 선택 + 자동 백업. 아이폰은 파일 앱/iCloud,
-     PC는 OneDrive 등 브라우저 밖에 보관 권장
-  5. 아이폰 실사용을 위한 호스팅은 **Vercel/Netlify 같은 무료 정적
-     호스팅**을 추천 (같은 와이파이로만 쓰는 LAN-only 방식은 PC를 계속
-     켜둬야 해서 비효율적) — 아직 미정, 사용자 결정 대기 중
+     PC는 OneDrive 등 브라우저 밖에 보관 권장 (지금은 데이터가 오직
+     브라우저 localStorage에만 있어서 백업 수단이 전혀 없음 — 우선순위 높음)
 
 **`<channel source="plugin:discord:discord" ...>` 태그로 메시지가 오면
 반드시 Discord `reply` 도구로 답한다 — 절대 터미널 트랜스크립트에만

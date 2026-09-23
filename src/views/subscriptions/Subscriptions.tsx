@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import {
-  CAlert,
   CButton,
   CCard,
   CCardBody,
@@ -20,18 +19,13 @@ import {
   CTableRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCloudDownload, cilPlus, cilReload, cilTrash } from '@coreui/icons'
-import { downloadSubscriptionTemplate } from '../../data/subscriptionTemplate'
-import { syncSubscriptionsFromProjectFile, SUBSCRIPTIONS_FILE_URL } from '../../data/subscriptionSync'
-import type { ImportError } from '../../data/importError'
+import { cilPlus, cilTrash } from '@coreui/icons'
 import type { SubscriptionCycle } from '../../data/subscription'
 import {
   addSubscription,
   deleteSubscription,
-  mergeSubscriptionsFromFile,
   updateSubscription,
   useSubscriptions,
-  useSubscriptionsLastSyncedAt,
 } from '../../data/subscriptionStore'
 import { getMonthlyProjection, getNextBillingDate } from '../../data/subscriptionSelectors'
 import { formatYearMonth } from '../../data/transactionSelectors'
@@ -44,9 +38,7 @@ function todayStr() {
 
 const Subscriptions = () => {
   const subscriptions = useSubscriptions()
-  const lastSyncedAt = useSubscriptionsLastSyncedAt()
 
-  // 새 구독 추가 폼
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
   const [amount, setAmount] = useState('')
@@ -76,29 +68,6 @@ const Subscriptions = () => {
     setCategory('')
     setAmount('')
     setMemo('')
-  }
-
-  // 엑셀 파일에서 가져오기 (병합)
-  const [errors, setErrors] = useState<ImportError[]>([])
-  const [addedCount, setAddedCount] = useState<number | null>(null)
-  const [isSyncing, setIsSyncing] = useState(false)
-
-  const handleSync = async () => {
-    setIsSyncing(true)
-    setErrors([])
-    setAddedCount(null)
-    try {
-      const result = await syncSubscriptionsFromProjectFile()
-      if (result.errors.length > 0) {
-        setErrors(result.errors)
-      } else {
-        setAddedCount(mergeSubscriptionsFromFile(result.subscriptions))
-      }
-    } catch {
-      setErrors([{ row: 0, message: '파일을 읽는 중 오류가 발생했습니다. 템플릿 형식을 확인해주세요.' }])
-    } finally {
-      setIsSyncing(false)
-    }
   }
 
   const thisMonth = formatYearMonth(new Date())
@@ -162,57 +131,6 @@ const Subscriptions = () => {
               </CCol>
             </CRow>
           </CForm>
-        </CCardBody>
-      </CCard>
-
-      <CCard className="mb-4">
-        <CCardHeader>엑셀에서 가져오기 (선택)</CCardHeader>
-        <CCardBody>
-          <p className="text-body-secondary">
-            여러 구독을 한 번에 넣고 싶을 때, 프로젝트의 <code>public{SUBSCRIPTIONS_FILE_URL}</code>{' '}
-            파일을 채워넣고 아래 버튼을 누르면 이미 있는 항목은 건너뛰고 새 항목만 추가됩니다.
-          </p>
-          <div className="d-flex gap-2 flex-wrap align-items-center">
-            <CButton color="secondary" variant="outline" disabled={isSyncing} onClick={() => void handleSync()}>
-              <CIcon icon={cilReload} className="me-2" />
-              {isSyncing ? '불러오는 중...' : '엑셀에서 가져오기'}
-            </CButton>
-            <CButton
-              color="secondary"
-              variant="outline"
-              onClick={() => void downloadSubscriptionTemplate()}
-            >
-              <CIcon icon={cilCloudDownload} className="me-2" />
-              양식 참고용 다운로드
-            </CButton>
-            {lastSyncedAt && (
-              <span className="text-body-secondary small">
-                마지막으로 가져온 시각: {new Date(lastSyncedAt).toLocaleString('ko-KR')}
-              </span>
-            )}
-          </div>
-
-          {addedCount !== null && (
-            <CAlert color={addedCount > 0 ? 'success' : 'warning'} className="mt-3 mb-0">
-              {addedCount > 0 ? `${addedCount}건을 새로 추가했습니다.` : '새로 추가된 항목이 없습니다.'}
-            </CAlert>
-          )}
-
-          {errors.length > 0 && (
-            <CAlert color="danger" className="mt-3 mb-0">
-              <div className="fw-semibold mb-1">
-                파일에 문제가 있어 가져오지 않았습니다. 수정 후 다시 시도해주세요.
-              </div>
-              <ul className="mb-0 ps-3">
-                {errors.slice(0, 10).map((error, index) => (
-                  <li key={index}>
-                    {error.row}행: {error.message}
-                  </li>
-                ))}
-                {errors.length > 10 && <li>...외 {errors.length - 10}건</li>}
-              </ul>
-            </CAlert>
-          )}
         </CCardBody>
       </CCard>
 
