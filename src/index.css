@@ -34,8 +34,17 @@
   --color-border: #374151;
 }
 
+html,
 body {
   margin: 0;
+  width: 100%;
+  overflow-x: hidden;
+  /* 좌우로는 못 밀리게, 위아래 스크롤만 되게 */
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+}
+
+body {
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family:
