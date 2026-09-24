@@ -44,6 +44,13 @@ body {
   overscroll-behavior-x: none;
 }
 
+/* body에만 걸어두면 바텀시트처럼 겹쳐진 레이어에는 안 먹는 경우가 있어서
+   모든 요소에 다 걸어준다 (스크롤 가능한 목록/시트 안쪽도 위아래만 되게). */
+* {
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text);

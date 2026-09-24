@@ -11,13 +11,19 @@ const BottomSheet = ({ open, onClose, title, children }: BottomSheetProps) => {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end overflow-hidden"
+      style={{ touchAction: 'none' }}
+      onClick={onClose}
+    >
       <div className="absolute inset-0 bg-black/40" />
       <div
-        className="sheet-panel relative w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto"
+        className="sheet-panel relative w-full rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto overflow-x-hidden"
         style={{
           backgroundColor: 'var(--color-surface)',
           paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
+          touchAction: 'pan-y',
+          overscrollBehaviorX: 'none',
         }}
         onClick={(e) => e.stopPropagation()}
       >
