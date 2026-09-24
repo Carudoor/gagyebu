@@ -16,7 +16,7 @@ const App = () => {
         <main
           className="flex-1 overflow-y-auto"
           style={{
-            paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
+            paddingTop: 'calc(env(safe-area-inset-top) + 40px)',
             paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))',
           }}
         >
