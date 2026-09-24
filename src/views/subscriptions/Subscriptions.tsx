@@ -212,8 +212,8 @@ const Subscriptions = () => {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className={fieldClass}
-              style={fieldStyle}
+              className={`${fieldClass} appearance-none`}
+              style={{ ...fieldStyle, WebkitAppearance: 'none' }}
             />
           </div>
           <div>

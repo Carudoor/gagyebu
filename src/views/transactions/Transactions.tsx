@@ -129,8 +129,8 @@ const Transactions = () => {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className={fieldClass}
-              style={fieldStyle}
+              className={`${fieldClass} appearance-none`}
+              style={{ ...fieldStyle, WebkitAppearance: 'none' }}
             />
           </div>
 
