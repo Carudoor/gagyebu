@@ -125,13 +125,15 @@ const Transactions = () => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div>
             <label className={labelClass}>날짜</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className={`${fieldClass} appearance-none`}
-              style={{ ...fieldStyle, WebkitAppearance: 'none' }}
-            />
+            <div className="h-12 w-full rounded-xl border overflow-hidden" style={fieldStyle}>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="h-full w-full px-3 text-base bg-transparent border-0 appearance-none"
+                style={{ color: 'var(--color-text)', WebkitAppearance: 'none' }}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

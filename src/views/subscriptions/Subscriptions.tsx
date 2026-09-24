@@ -208,13 +208,15 @@ const Subscriptions = () => {
           </div>
           <div>
             <label className={labelClass}>시작일</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className={`${fieldClass} appearance-none`}
-              style={{ ...fieldStyle, WebkitAppearance: 'none' }}
-            />
+            <div className="h-12 w-full rounded-xl border overflow-hidden" style={fieldStyle}>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="h-full w-full px-3 text-base bg-transparent border-0 appearance-none"
+                style={{ color: 'var(--color-text)', WebkitAppearance: 'none' }}
+              />
+            </div>
           </div>
           <div>
             <label className={labelClass}>메모</label>
