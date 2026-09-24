@@ -15,7 +15,7 @@ const Records = () => {
   const [segment, setSegment] = useState<Segment>('transactions')
 
   return (
-    <div className="pt-4">
+    <div>
       <div className="px-4 mb-4">
         <div
           className="flex rounded-xl p-1"

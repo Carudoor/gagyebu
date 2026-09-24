@@ -11,10 +11,10 @@ const tabs = [
 const BottomNav = () => {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex justify-around border-t backdrop-blur-md"
+      className="fixed bottom-0 left-0 right-0 z-40 flex justify-around border-t"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom)',
-        backgroundColor: 'color-mix(in srgb, var(--color-surface) 85%, transparent)',
+        backgroundColor: 'var(--color-surface)',
         borderColor: 'var(--color-border)',
       }}
     >

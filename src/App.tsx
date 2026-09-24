@@ -15,7 +15,10 @@ const App = () => {
       >
         <main
           className="flex-1 overflow-y-auto"
-          style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}
+          style={{
+            paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
+            paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))',
+          }}
         >
           <Suspense
             fallback={

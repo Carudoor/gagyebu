@@ -25,7 +25,7 @@ const Home = () => {
 
   if (transactions.length === 0) {
     return (
-      <div className="px-4 pt-6 pb-8 text-center">
+      <div className="px-4 pb-8 text-center">
         <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
           아직 등록된 거래가 없습니다.
         </p>
@@ -41,7 +41,7 @@ const Home = () => {
   }
 
   return (
-    <div className="px-4 pt-4 pb-8 flex flex-col gap-4">
+    <div className="px-4 pb-8 flex flex-col gap-4">
       {/* Hero card */}
       <div
         className="rounded-2xl p-5 text-white"

@@ -26,7 +26,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="pt-4">
+    <div>
       <div
         className="mx-4 mb-4 rounded-2xl p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]"
         style={{ backgroundColor: 'var(--color-surface)' }}
