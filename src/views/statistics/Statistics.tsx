@@ -32,7 +32,7 @@ const Statistics = () => {
         <select
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
-          className="h-11 rounded-xl border px-3 text-sm"
+          className="h-11 rounded-xl border px-3 text-base"
           style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)' }}
         >
           {monthOptions.map((month) => (

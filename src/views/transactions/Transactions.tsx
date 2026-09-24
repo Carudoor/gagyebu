@@ -14,7 +14,7 @@ import {
 const currency = new Intl.NumberFormat('ko-KR')
 
 const fieldClass =
-  'h-12 w-full rounded-xl border px-3 text-sm bg-transparent'
+  'h-12 w-full rounded-xl border px-3 text-base bg-transparent'
 const fieldStyle = { borderColor: 'var(--color-border)', color: 'var(--color-text)' }
 const labelClass = 'text-xs font-medium mb-1 block'
 
@@ -123,17 +123,18 @@ const Transactions = () => {
 
       <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="새 거래 추가">
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div>
+            <label className={labelClass}>날짜</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className={fieldClass}
+              style={fieldStyle}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>날짜</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className={fieldClass}
-                style={fieldStyle}
-              />
-            </div>
             <div>
               <label className={labelClass}>구분</label>
               <select
@@ -146,9 +147,6 @@ const Transactions = () => {
                 <option value="수입">수입</option>
               </select>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>카테고리</label>
               <select
@@ -164,18 +162,19 @@ const Transactions = () => {
                 ))}
               </select>
             </div>
-            <div>
-              <label className={labelClass}>금액</label>
-              <input
-                type="number"
-                min={1}
-                placeholder="0"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className={fieldClass}
-                style={fieldStyle}
-              />
-            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>금액</label>
+            <input
+              type="number"
+              min={1}
+              placeholder="0"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className={fieldClass}
+              style={fieldStyle}
+            />
           </div>
 
           <div>

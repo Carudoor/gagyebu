@@ -16,7 +16,7 @@ const currency = new Intl.NumberFormat('ko-KR')
 
 const cardClass = 'rounded-2xl p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] mb-4'
 const cardStyle = { backgroundColor: 'var(--color-surface)' }
-const fieldClass = 'h-12 w-full rounded-xl border px-3 text-sm bg-transparent'
+const fieldClass = 'h-12 w-full rounded-xl border px-3 text-base bg-transparent'
 const fieldStyle = { borderColor: 'var(--color-border)', color: 'var(--color-text)' }
 const labelClass = 'text-xs font-medium mb-1 block'
 
@@ -180,7 +180,7 @@ const Subscriptions = () => {
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>결제일</label>
               <input
@@ -205,16 +205,16 @@ const Subscriptions = () => {
                 <option value="매년">매년</option>
               </select>
             </div>
-            <div>
-              <label className={labelClass}>시작일</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className={fieldClass}
-                style={fieldStyle}
-              />
-            </div>
+          </div>
+          <div>
+            <label className={labelClass}>시작일</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className={fieldClass}
+              style={fieldStyle}
+            />
           </div>
           <div>
             <label className={labelClass}>메모</label>
