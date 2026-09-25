@@ -1,22 +1,15 @@
 import { useSyncExternalStore } from 'react'
 import type { Subscription } from './subscription'
+import { loadVersioned, saveVersioned } from './versionedStorage'
 
 const STORAGE_KEY = 'household-ledger.subscriptions'
+const SCHEMA_VERSION = 1
 
 const listeners = new Set<() => void>()
-let subscriptions: Subscription[] = load()
-
-function load(): Subscription[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Subscription[]) : []
-  } catch {
-    return []
-  }
-}
+let subscriptions: Subscription[] = loadVersioned<Subscription>(STORAGE_KEY)
 
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(subscriptions))
+  saveVersioned(STORAGE_KEY, subscriptions, SCHEMA_VERSION)
   listeners.forEach((listener) => listener())
 }
 

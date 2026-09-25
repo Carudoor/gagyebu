@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import BottomNav from './components/BottomNav'
+import UpdatePrompt from './components/UpdatePrompt'
 
 const Home = lazy(() => import('./views/home/Home'))
 const Records = lazy(() => import('./views/records/Records'))
@@ -36,6 +37,7 @@ const App = () => {
           </Suspense>
         </main>
         <BottomNav />
+        <UpdatePrompt />
       </div>
     </HashRouter>
   )

@@ -1,26 +1,19 @@
 import { useSyncExternalStore } from 'react'
 import type { Transaction } from './transaction'
+import { loadVersioned, saveVersioned } from './versionedStorage'
 
 const STORAGE_KEY = 'household-ledger.transactions'
+const SCHEMA_VERSION = 1
 
 const listeners = new Set<() => void>()
-let transactions: Transaction[] = load()
-
-function load(): Transaction[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Transaction[]) : []
-  } catch {
-    return []
-  }
-}
+let transactions: Transaction[] = loadVersioned<Transaction>(STORAGE_KEY)
 
 function sortByDateDesc(list: Transaction[]) {
   return [...list].sort((a, b) => b.date.localeCompare(a.date))
 }
 
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions))
+  saveVersioned(STORAGE_KEY, transactions, SCHEMA_VERSION)
   listeners.forEach((listener) => listener())
 }
 

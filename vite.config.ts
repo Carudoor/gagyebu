@@ -12,7 +12,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 새 배포가 뜨면 바로 적용하지 않고, 사용자가 확인 누를 때까지 기다림
+      // (src/components/UpdatePrompt.tsx가 virtual:pwa-register/react로 직접 제어).
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: '가계부',
